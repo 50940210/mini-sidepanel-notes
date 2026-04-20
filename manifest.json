@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Mini Side Panel Notes",
+  "version": "0.1.0",
+  "description": "A minimal Chrome extension with a side panel and textarea.",
+  "permissions": ["sidePanel"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Open Notes Panel"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}
