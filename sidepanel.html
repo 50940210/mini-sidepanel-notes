@@ -13,8 +13,51 @@
       }
 
       h1 {
-        font-size: 18px;
-        margin: 0 0 12px;
+        font-size: 20px;
+        margin: 0 0 16px;
+      }
+
+      button {
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      #new-note,
+      #back-btn {
+        margin-bottom: 16px;
+      }
+
+      #notes-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .note-item {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+
+      .note-item:hover {
+        background: #f0f0f0;
+      }
+
+      .note-title {
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+
+      .note-preview {
+        color: #555;
+        font-size: 14px;
       }
 
       textarea {
@@ -22,8 +65,9 @@
         height: 70vh;
         box-sizing: border-box;
         resize: vertical;
-        padding: 12px;
-        font-size: 14px;
+        padding: 16px;
+        font-size: 16px;
+        line-height: 1.6;
         border: 1px solid #ccc;
         border-radius: 8px;
         background: white;
@@ -31,8 +75,16 @@
     </style>
   </head>
   <body>
-    <h1>My Notes</h1>
-    <textarea placeholder="Type something here..."></textarea>
+    <div id="list-view">
+      <h1>My Notes</h1>
+      <button id="new-note">+ New Note</button>
+      <ul id="notes-list"></ul>
+    </div>
+
+    <div id="editor-view" style="display: none;">
+      <button id="back-btn">← Back</button>
+      <textarea id="editor" placeholder="Type something here..."></textarea>
+    </div>
 
     <script src="sidepanel.js"></script>
   </body>
