@@ -1,41 +1,117 @@
-const textarea = document.querySelector("textarea");
+const listView = document.getElementById("list-view");
+const editorView = document.getElementById("editor-view");
+const notesList = document.getElementById("notes-list");
+const newNoteBtn = document.getElementById("new-note");
+const backBtn = document.getElementById("back-btn");
+const editor = document.getElementById("editor");
 
-function cleanPastedText(text) {
-  return text
-    // 去掉常见分隔线
-    .replace(/^---$/gm, "")
-    .replace(/^___$/gm, "")
-    .replace(/^\*\*\*$/gm, "")
-    // 去掉多余的奇怪连续标点
-    .replace(/[、]{3,}/g, "")
-    .replace(/[.]{3,}/g, "...")
-    // 把 3 个及以上空行压成 2 个
-    .replace(/\n{3,}/g, "\n\n")
-    // 去掉每行末尾多余空格
-    .replace(/[ \t]+$/gm, "")
-    // 去掉整体首尾空白
-    .trim();
+let notes = [];
+let currentNoteId = null;
+
+function canUseStorage() {
+  return typeof chrome !== "undefined" &&
+    chrome.storage &&
+    chrome.storage.local;
 }
 
-textarea.addEventListener("paste", (event) => {
-  event.preventDefault();
+function saveNotes() {
+  if (!canUseStorage()) {
+    console.error("chrome.storage.local is unavailable");
+    return;
+  }
 
-  const pastedText = (event.clipboardData || window.clipboardData).getData("text");
-  const cleanedText = cleanPastedText(pastedText);
+  chrome.storage.local.set({ notes });
+}
 
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const currentValue = textarea.value;
+function renderNotesList() {
+  notesList.innerHTML = "";
 
-  textarea.value =
-    currentValue.slice(0, start) +
-    cleanedText +
-    currentValue.slice(end);
+  if (notes.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.textContent = "No notes yet.";
+    notesList.appendChild(emptyItem);
+    return;
+  }
 
-  const newCursorPosition = start + cleanedText.length;
-  textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+  notes.forEach((note) => {
+    const li = document.createElement("li");
+    li.className = "note-item";
+
+    const title = document.createElement("div");
+    title.className = "note-title";
+    title.textContent = note.title || "Untitled Note";
+
+    const preview = document.createElement("div");
+    preview.className = "note-preview";
+    preview.textContent = note.content
+      ? note.content.slice(0, 60)
+      : "Empty note";
+
+    li.appendChild(title);
+    li.appendChild(preview);
+
+    li.addEventListener("click", () => {
+      openEditor(note.id);
+    });
+
+    notesList.appendChild(li);
+  });
+}
+
+function openEditor(noteId) {
+  const note = notes.find((item) => item.id === noteId);
+  if (!note) return;
+
+  currentNoteId = noteId;
+  editor.value = note.content || "";
+
+  listView.style.display = "none";
+  editorView.style.display = "block";
+}
+
+function goBackToList() {
+  currentNoteId = null;
+  editorView.style.display = "none";
+  listView.style.display = "block";
+  renderNotesList();
+}
+
+function createNewNote() {
+  const newNote = {
+    id: Date.now(),
+    title: `Note ${notes.length + 1}`,
+    content: ""
+  };
+
+  notes.unshift(newNote);
+  saveNotes();
+  openEditor(newNote.id);
+  renderNotesList();
+}
+
+editor.addEventListener("input", () => {
+  const note = notes.find((item) => item.id === currentNoteId);
+  if (!note) return;
+
+  note.content = editor.value;
+
+  const trimmed = editor.value.trim();
+  note.title = trimmed
+    ? trimmed.split("\n")[0].slice(0, 20)
+    : "Untitled Note";
+
+  saveNotes();
 });
 
-textarea.addEventListener("input", () => {
-  console.log("Current text:", textarea.value);
-});
+newNoteBtn.addEventListener("click", createNewNote);
+backBtn.addEventListener("click", goBackToList);
+
+if (canUseStorage()) {
+  chrome.storage.local.get({ notes: [] }, (result) => {
+    notes = result.notes;
+    renderNotesList();
+  });
+} else {
+  console.error("chrome.storage.local is unavailable");
+  renderNotesList();
+}

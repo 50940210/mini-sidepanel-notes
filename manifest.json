@@ -3,7 +3,7 @@
   "name": "Mini Side Panel Notes",
   "version": "0.1.0",
   "description": "A minimal Chrome extension with a side panel and textarea.",
-  "permissions": ["sidePanel"],
+  "permissions": ["sidePanel", "storage"],
   "background": {
     "service_worker": "background.js"
   },
